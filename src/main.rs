@@ -4,12 +4,12 @@ use find_folder;
 
 mod libs;
 mod sprite;
-use libs::{Vec2D, TileMap};
+use libs::{TileMap};
 use sprite::Sprite;
 
 struct Game {
 	tilemap: TileMap,
-	player: Vec<Sprite>,
+	player: Sprite,
 	ground: Vec<Sprite>,
 }
 
@@ -19,55 +19,58 @@ impl Game {
 		let tilemap = TileMap::new("assets/map.txt");
 
 		let mut ground = Vec::new();
-		let mut player = Vec::new();
 
 		let assets = find_folder::Search::Kids(1)
     				.for_folder("assets").unwrap();
 		
-		let ground_texture = Texture::from_path(
-								&mut w.create_texture_context(),
-								assets.join("ground.png"),
-								Flip::None,
-								&TextureSettings::new()
-							).unwrap();
+		let ground_texture = Sprite::create_texture(assets.join("ground.png"), w);
+		let brick_texture = Sprite::create_texture(assets.join("brick.png"), w);
+		let brick2_texture = Sprite::create_texture(assets.join("brick2.png"), w);
+		let cloud_texture = Sprite::create_texture(assets.join("cloud.png"), w);
+		let player_texture = Sprite::create_texture(assets.join("player.png"), w);
 
-		let player_texture = Texture::from_path(
-								&mut w.create_texture_context(),
-								assets.join("mario.png"),
-								Flip::None,
-								&TextureSettings::new()
-							).unwrap();
+		let mut player = Sprite::new(0, 0, player_texture.clone());
 
-		let player_scale_x = 0.15;
-		let player_scale_y = 0.18;
-		let player_size_x = player_texture.get_width() as f64 * player_scale_x;
-		let player_size_y = player_texture.get_height() as f64 * player_scale_y;
-
-		let ground_scale_x = 0.2;
-		let ground_scale_y = 0.2;
-		let ground_size_x = ground_texture.get_width() as f64 * ground_scale_x;
-		let ground_size_y = ground_texture.get_width() as f64 * ground_scale_y;
-
-		
 		for (i, tiles) in tilemap.map.iter().enumerate() {
 			for (j, tile) in tiles.chars().enumerate() {
 				if tile == 'P' {
-					player.push(
-						Sprite::new(
-							Vec2D{x: j as f64, y: i as f64},
-							Vec2D{x: player_size_x, y: player_size_y},
-							Vec2D{x: player_scale_x, y: player_scale_y},
+					player = Sprite::new(
+							j, i,
 							player_texture.clone()
+						);
+				}
+				if tile == '1' {
+					ground.push(
+						Sprite::new(
+							j, i,
+							ground_texture.clone()
 						)
 					)
 				}
+
 				if tile == '2' {
 					ground.push(
 						Sprite::new(
-							Vec2D{x: j as f64, y: i as f64},
-							Vec2D{x: ground_size_x, y: ground_size_y},
-							Vec2D{x: ground_scale_x, y: ground_scale_y},
-							ground_texture.clone()
+							j,i,
+							brick_texture.clone()
+						)
+					)
+				}
+
+				if tile == '?' {
+					ground.push(
+						Sprite::new(
+							j,i,
+							brick2_texture.clone()
+						)
+					)
+				}
+
+				if tile == '@' {
+					ground.push(
+						Sprite::new(
+							j,i,
+							cloud_texture.clone()
 						)
 					)
 				}
@@ -85,22 +88,17 @@ impl Game {
 		if let Some(_) = e.render_args(){
 			
 			w.draw_2d(e, |c, g, _d | {
-				clear([1.0;4], g);
+				clear(color::hex("aaeeffff"), g);
 			});
 
 			for ground in &mut self.ground {
 				ground.render(&e, w);
 			}
+			self.player.render(&e, w);
+		}
 
-			self.player[0].render(&e, w);
-			if !self.player[0].collision(&mut self.ground){
-				self.player[0].update(&e);
-				
-			}else{
-				self.player[0].vel.y = 0.0;
-			}
-			
-
+		if let Some(u) = e.update_args(){
+			self.player.update(u.dt, &mut self.ground);
 		}
 
 		if let Some(b) = e.press_args(){
@@ -108,8 +106,31 @@ impl Game {
 			if let Button::Keyboard(key) = b {
 				match key {
 					Key::Space => {
-						self.player[0].vel.y -= 10.0 * 0.6;
-						self.player[0].pos.y += self.player[0].vel.y;
+						self.player.vel.y -= 3.0 * 0.6;
+						self.player.pos.y += self.player.vel.y;
+					},
+					Key::Right => {
+						self.player.vel.x += 0.1 * 0.6;
+						self.player.pos.x += self.player.vel.x;
+					},
+					Key::Left => {
+						self.player.vel.x += 0.1 * 0.6;
+						self.player.pos.x -= self.player.vel.x;
+					},
+					_ => println!("{:?}", key)
+				}
+			}
+		}
+
+		if let Some(b) = e.release_args(){
+			
+			if let Button::Keyboard(key) = b {
+				match key {
+					Key::Right => {
+						self.player.vel.x = 0.0;
+					},
+					Key::Left => {
+						self.player.vel.x = 0.0;
 					},
 					_ => println!("{:?}", key)
 				}
@@ -126,7 +147,7 @@ fn main() {
 			.graphics_api(opengl)
 			.build()
 			.unwrap();
-	window.set_ups(60);
+	window.set_ups(120);
 
 	let mut game = Game::new(&mut window);
 

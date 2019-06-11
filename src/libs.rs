@@ -7,10 +7,10 @@ pub struct Vec2D {
 }
 
 impl Vec2D {
-	pub fn new()->Vec2D{
+	pub fn new(x: usize, y:usize)->Vec2D{
 		Vec2D{
-			x: 0.0,
-			y: 0.0
+			x: x as f64,
+			y: y as f64
 		}
 	}
 }
