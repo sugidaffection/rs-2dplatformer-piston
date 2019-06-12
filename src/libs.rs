@@ -7,11 +7,21 @@ pub struct Vec2D {
 }
 
 impl Vec2D {
-	pub fn new(x: usize, y:usize)->Vec2D{
+	pub fn new(x: f64, y: f64)->Vec2D{
 		Vec2D{
-			x: x as f64,
-			y: y as f64
+			x: x,
+			y: y
 		}
+	}
+
+	pub fn add(&mut self, x: f64, y: f64) {
+		self.x += x;
+		self.y += y;
+	}
+
+	pub fn mult(&mut self, x: f64, y: f64) {
+		self.x *= x;
+		self.y *= y;
 	}
 }
 
@@ -39,4 +49,41 @@ impl TileMap {
 		}
 	}
 
+}
+
+pub struct Keypress {
+	pub up: bool,
+	pub down: bool,
+	pub left: bool,
+	pub right: bool
+}
+
+impl Keypress {
+	pub fn new()->Keypress{
+		Keypress {
+			up: false,
+			down: false,
+			left: false,
+			right: false
+		}
+	}
+}
+
+pub struct Camera {
+	pub max_x: f64,
+	pub min_x: f64
+}
+
+impl Camera {
+	pub fn new(min_x: f64, max_x: f64)->Camera {
+		Camera{
+			max_x: max_x,
+			min_x: min_x
+		}
+	}
+
+	pub fn mov(&mut self, x: f64){
+		self.min_x += x;
+		self.max_x += x;
+	}
 }
