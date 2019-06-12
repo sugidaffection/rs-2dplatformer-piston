@@ -1,16 +1,17 @@
 use std::fs::File;
 use std::io::prelude::Read;
 
+#[derive(Clone)]
 pub struct Vec2D {
 	pub x: f64,
 	pub y: f64
 }
 
 impl Vec2D {
-	pub fn new(x: f64, y: f64)->Vec2D{
+	pub fn new()->Vec2D{
 		Vec2D{
-			x: x,
-			y: y
+			x: 0.0,
+			y: 0.0
 		}
 	}
 
@@ -24,6 +25,7 @@ impl Vec2D {
 		self.y *= y;
 	}
 }
+
 
 pub struct TileMap {
 	pub map: Vec<String>

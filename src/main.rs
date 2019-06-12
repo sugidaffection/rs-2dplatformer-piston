@@ -5,12 +5,11 @@ use find_folder;
 mod libs;
 mod sprite;
 use libs::{TileMap, Camera};
-use sprite::{Sprite, SpriteEvent, Player};
+use sprite::{Sprite, SpriteEvent, Player, Object};
 
 struct Game {
 	tilemap: TileMap,
-	ground: Vec<Sprite>,
-	cloud: Vec<Sprite>,
+	objects: Vec<Object>,
 	player: Player,
 	camera: Camera
 }
@@ -23,71 +22,67 @@ impl Game {
 		let assets = find_folder::Search::Kids(1)
     				.for_folder("assets").unwrap();
 		
-		let ground_texture = Sprite::create_texture(assets.join("ground.png"), w, Flip::None);
-		let brick_texture = Sprite::create_texture(assets.join("brick.png"), w, Flip::None);
-		let brick2_texture = Sprite::create_texture(assets.join("brick2.png"), w, Flip::None);
-		let cloud_texture = Sprite::create_texture(assets.join("cloud.png"), w, Flip::None);
-		let player_texture = Sprite::create_texture(assets.join("player.png"), w, Flip::None);
-		let player_back_texture = Sprite::create_texture(assets.join("player.png"), w, Flip::Horizontal);
+		let ground_sprite = Sprite::new(assets.join("ground.png"), w, Flip::None);
+		let brick_sprite = Sprite::new(assets.join("brick.png"), w, Flip::None);
+		let brick2_sprite = Sprite::new(assets.join("brick2.png"), w, Flip::None);
+		let cloud_sprite = Sprite::new(assets.join("cloud.png"), w, Flip::None);
+		let player_sprite = Sprite::new(assets.join("player.png"), w, Flip::None);
+		let player_back_sprite = Sprite::new(assets.join("player.png"), w, Flip::Horizontal);
 
+		let mut objects = Vec::new();
+		let mut player = Player::new();
+		player.add_animation(player_sprite);
+		player.add_animation(player_back_sprite);
+		player.set_scale(40.0);
 
-		let mut ground = Vec::new();
-		let mut cloud = Vec::new();
-		let mut player_sprite = Sprite::new(0, 0, player_texture.clone());
-		let mut player = Player::new(player_sprite);
+		let mut ground = Object::new(true);
+		ground.add_sprite(ground_sprite);
+		ground.set_scale(40.0);
+		let mut brick = Object::new(true);
+		brick.add_sprite(brick_sprite);
+		brick.set_scale(40.0);
+		let mut brick2 = Object::new(true);
+		brick2.add_sprite(brick2_sprite);
+		brick2.set_scale(40.0);
+		let mut cloud = Object::new(false);
+		cloud.add_sprite(cloud_sprite);
+		cloud.set_scale(40.0);
 
 		for (i, tiles) in tilemap.map.iter().enumerate() {
 			for (j, tile) in tiles.chars().enumerate() {
 				if tile == 'P' {
-					player_sprite = Sprite::new(
-							j, i,
-							player_texture.clone()
-						);
+					player.set_pos(j as f64, i as f64);
 				}
 				if tile == '1' {
-					ground.push(
-						Sprite::new(
-							j, i,
-							ground_texture.clone()
-						)
-					)
+					let mut object = ground.clone();
+					object.set_pos(j as f64, i as f64);
+					objects.push(object);
 				}
 
 				if tile == '2' {
-					ground.push(
-						Sprite::new(
-							j,i,
-							brick_texture.clone()
-						)
-					)
+					let mut object = brick.clone();
+					object.set_pos(j as f64, i as f64);
+					objects.push(object);
 				}
 
 				if tile == '?' {
-					ground.push(
-						Sprite::new(
-							j,i,
-							brick2_texture.clone()
-						)
-					)
+					let mut object = brick2.clone();
+					object.set_pos(j as f64, i as f64);
+					objects.push(object);
 				}
 
 				if tile == '@' {
-					cloud.push(
-						Sprite::new(
-							j,i,
-							cloud_texture.clone()
-						)
-					)
+					let mut object = cloud.clone();
+					object.set_pos(j as f64, i as f64);
+					objects.push(object);
 				}
+				
 			}
 		};
-
-		player.texture.push(player_back_texture);
 		
 		Game{
 			tilemap: tilemap,
-			ground: ground,
-			cloud: cloud,
+			objects: objects,
 			player: player,
 			camera: Camera::new(-1.0, w.size().width / 40.0)
 		}
@@ -98,20 +93,16 @@ impl Game {
 		w.draw_2d(e, |_, g, _d | {
 			clear(color::hex("aaeeffff"), g);
 		});
-
-		for ground in self.ground.iter_mut().filter(|g| g.pos.x < 15.0){
-			ground.render(e, w);
-		}
-
-		for cloud in self.cloud.iter_mut().filter(|c| c.pos.x < 15.0) {
-			cloud.render(e, w);
+		
+		for object in self.objects.iter_mut().filter(|g| g.pos.x < 15.0){
+			object.render(e, w);
 		}
 
 		self.player.render(e, w);
 		
 
 		if let Some(u) = e.update_args(){
-			self.player.update(u.dt, self.ground.as_mut());
+			self.player.update(u.dt, self.objects.as_mut());
 		}
 
 		self.player.key_press(e);
