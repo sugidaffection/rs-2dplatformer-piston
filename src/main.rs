@@ -1,14 +1,14 @@
-extern crate piston_window;
 use piston_window::*;
 use find_folder;
+use fps_counter::FPSCounter;
 
 mod libs;
 mod sprite;
 use libs::{TileMap, Camera};
-use sprite::{Sprite, SpriteEvent, Player, Object};
+use sprite::{Sprite, Player, Object};
 
 struct Game {
-	camera: Camera
+	camera: Camera,
 }
 
 impl Game {
@@ -85,7 +85,7 @@ impl Game {
 		let screen_h = tilemap.map.len() as f64;
 		
 		Game{
-			camera: Camera::new(screen_w, screen_h, w.size().width/40.0, w.size().height/40.0, player, objects)
+			camera: Camera::new(screen_w, screen_h, w.size().width/40.0, w.size().height/40.0, player, objects),
 		}
 	}
 
@@ -115,8 +115,25 @@ fn main() {
 	window.set_ups(60);
 
 	let mut game = Game::new(&mut window);
+	let mut fps_counter = FPSCounter::new();
+
+	let assets = find_folder::Search::Kids(1).for_folder("assets").unwrap();
+	let mut glyphs = window.load_font(assets.join("FiraSans-Regular.ttf")).unwrap();
 
 	while let Some(e) = window.next() {
 		game.run(&e, &mut window);
+		let fps = format!("{} fps", fps_counter.tick().to_string());
+		window.draw_2d(&e, |c, g, device| {
+            let transform = c.transform.trans(10.0, 25.0);
+            text::Text::new_color([0.0, 0.0, 0.0, 1.0], 24)
+			.draw(
+                &fps,
+                &mut glyphs,
+                &c.draw_state,
+                transform, g
+            ).unwrap();
+
+            glyphs.factory.encoder.flush(device);
+        });
 	}
 }

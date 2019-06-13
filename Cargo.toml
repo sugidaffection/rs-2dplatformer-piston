@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 piston_window = "0.94.0"
 find_folder = "0.3.0"
+fps_counter = "1.0.0"
