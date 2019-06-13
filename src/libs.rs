@@ -78,11 +78,6 @@ impl Keypress {
 	}
 }
 
-pub struct Collision {
-	direction: String,
-	x: f64
-}
-
 pub struct Camera {
 	pub screen_w: f64,
 	pub screen_h: f64,
@@ -122,11 +117,12 @@ impl Camera {
 
 	pub fn update(&mut self, dt: f64){
 
-		self.acc = Vec2D::new();
-		self.acc.y = 1.0;
-		self.player.ground = false;
+		self.player.pos.x = self.w / 2.0 - 0.5;
+		self.player.lock = true;
 
-		self.collision();
+		self.acc = Vec2D::new();
+		self.acc.y = 0.9;
+		self.player.ground = false;
 
 		if self.key.right {
 			self.acc.x = 0.3;
@@ -138,6 +134,9 @@ impl Camera {
 			self.player.back = true;
 		}
 
+		self.collision();
+		
+
 		if self.key.up && self.player.ground{
 			self.vel.y = -0.3;
 			self.player.ground = false;
@@ -146,29 +145,8 @@ impl Camera {
 
 		self.acc.add(self.vel.x * -2.0, 0.0);
 		self.vel.add(self.acc.x * dt, self.acc.y * dt);
-		
-
-		if self.player.pos.x >= self.w / 2.0 - 1.0 {
-			self.player.lock = true;
-		}
-
-		let hit = self.hit_box();
 
 		if self.player.lock {
-			if let Some(collision) = hit {
-				for object in self.object.iter_mut() {
-					if collision.direction == "left" {
-						self.vel.x = 0.0;
-						object.pos.x += collision.x;
-					}
-
-					if collision.direction == "right" {
-						self.vel.x = 0.0;
-						object.pos.x -= collision.x;
-					}
-				}
-				
-			}
 			for object in self.object.iter_mut() {
 				object.update(self.vel.x, 0.0);
 			}
@@ -196,30 +174,23 @@ impl Camera {
 						self.player.ground = true;
 					}
 				}
-			}
-		}
-	}
 
-	pub fn hit_box(&mut self) -> Option<Collision>{
-		for object in self.object.iter_mut(){
-			if object.solid {
 				if (self.player.pos.y + 0.2 >= object.pos.y &&
 					self.player.pos.y + 0.2 <= object.pos.y + 1.0) ||
-					(self.player.pos.y + 0.9 <= object.pos.y + 1.0 &&
-					self.player.pos.y + 0.9 >= object.pos.y) {
-					if self.player.pos.x + 0.8 >= object.pos.x && self.player.pos.x + 0.8 <= object.pos.x + 1.0 {
-						return Some(Collision{ direction: "left".to_owned(), x: 0.03});
+					(self.player.pos.y + 0.8 <= object.pos.y + 1.0 &&
+					self.player.pos.y + 0.8 >= object.pos.y) {
+					if self.player.pos.x + 0.8 >= object.pos.x && self.player.pos.x + 0.3 <= object.pos.x + 1.0 {
+						self.acc.x = 0.0;
+						self.vel.x = -0.02;
 					}
 
-					if self.player.pos.x + 0.2 <= object.pos.x + 1.0 && self.player.pos.x + 0.2 >= object.pos.x {
-						return Some(Collision{ direction: "right".to_owned(), x: 0.03});
+					if self.player.pos.x + 0.2 <= object.pos.x + 1.0 && self.player.pos.x + 0.3 >= object.pos.x {
+						self.acc.x = 0.0;
+						self.vel.x = 0.02;
 					}
 				}
 			}
 		}
-
-		None
-		
 	}
 
 	pub fn keyEvent(&mut self, e: &Event){
