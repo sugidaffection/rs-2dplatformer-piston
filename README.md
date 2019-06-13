@@ -1,2 +1,2 @@
-# rs-mario-piston
-Mario Game made with rust and piston game engine
+# rs-2dplatformer-piston
+2D Platformer Game made with rust and piston game engine
