@@ -1,5 +1,5 @@
 [package]
-name = "super_mario"
+name = "rs_2dplatformer_piston"
 version = "0.1.0"
 authors = ["Sugi <sugidaffection@gmail.com>"]
 edition = "2018"
