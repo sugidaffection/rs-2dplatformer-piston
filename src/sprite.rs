@@ -32,7 +32,7 @@ pub struct Object {
 	pub pos: Vec2D,
 	scale: Vec2D,
 	sprite: Option<Sprite>,
-	solid: bool
+	pub solid: bool
 }
 
 impl Object {
@@ -64,6 +64,10 @@ impl Object {
 			}
 		}
 	}
+
+	pub fn update(&mut self, x: f64, y: f64){
+		self.pos.add(-x, -y);
+	}
 }
 
 impl SpriteEvent for Object {
@@ -77,7 +81,7 @@ impl SpriteEvent for Object {
 					.transform, g
 				);
 			}else{
-				rectangle([0.3;4], [self.pos.x, self.pos.y, 40.0, 40.0], c.transform, g);
+				rectangle(color::hex("aaeeffff"), [self.pos.x * 40.0, self.pos.y * 40.0, 40.0, 40.0], c.transform, g);
 			}
 			
 		});
@@ -86,12 +90,11 @@ impl SpriteEvent for Object {
 
 pub struct Player {
 	key: Keypress,
-	ground: bool,
-	pos: Vec2D,
+	pub ground: bool,
+	pub pos: Vec2D,
 	scale: Vec2D,
-	vel: Vec2D,
-	acc: Vec2D,
-	back: bool,
+	pub back: bool,
+	pub lock: bool,
 	animation: Vec<Sprite>,
 }
 
@@ -103,9 +106,8 @@ impl Player {
 			ground: false,
 			pos: Vec2D::new(),
 			scale: Vec2D::new(),
-			vel: Vec2D::new(),
-			acc: Vec2D::new(),
 			back: false,
+			lock: false,
 			animation: Vec::new(),
 		}
 	}
@@ -128,117 +130,10 @@ impl Player {
 			y: size / sprite.texture.get_height() as f64
 		}
 	}
+	
 
-	pub fn update(&mut self, dt: f64, objects: &mut Vec<Object>){
-		self.acc = Vec2D::new();
-		self.acc.y = 0.9;
-		self.ground = false;
-		
-		if self.key.right {
-			self.acc.x = 0.3;
-			self.back = false;
-		}
-
-		if self.key.left {
-			self.acc.x = -0.3;
-			self.back = true;
-		}
-
-		let hit = self.collision(objects);
-		if hit {
-			if self.vel.y >= 0.0{
-				self.pos.y = self.pos.y.round();
-				self.ground = true;
-			}
-			
-		}
-
-		if self.key.up && self.ground{
-			self.vel.y = -0.3;
-			self.ground = false;
-		}
-
-		if self.pos.x + 0.3 <= 0.0 {
-			self.vel.x = 0.0;
-			self.pos.x = -0.3;
-		}
-
-		if self.pos.x - 0.3 >= 14.0 {
-			self.vel.x = 0.0;
-			self.pos.x = 14.3;
-		}
-
-		self.acc.add(self.vel.x * -2.0, 0.0);
-		self.vel.add(self.acc.x * dt, self.acc.y * dt);
-
-		self.pos.add(self.vel.x, self.vel.y);
-
-	}
-
-	pub fn key_press(&mut self, e: &Event){
-		if let Some(b) = e.press_args(){
-			if let Button::Keyboard(key) = b {
-				match key {
-					Key::Space => self.key.up = true,
-					Key::Right => self.key.right = true,
-					Key::Left => self.key.left = true,
-					_ => println!("{:?}", key)
-				}
-			}
-		}
-
-		if let Some(b) = e.release_args(){
-			if let Button::Keyboard(key) = b {
-				match key {
-					Key::Space => self.key.up = false,
-					Key::Right => self.key.right = false,
-					Key::Left => self.key.left = false,
-					_ => println!("{:?}", key)
-				}
-			}
-		}
-		
-	}
-
-	pub fn collision(&mut self, objects: &mut Vec<Object>) -> bool{
-		for object in objects {
-			if object.solid {
-
-				if self.pos.x + 0.75 >= object.pos.x && self.pos.x + 0.25 <= object.pos.x + 1.0 {
-					if self.pos.y <= object.pos.y + 1.0 && self.pos.y + 0.3 >= object.pos.y + 1.0 {
-						self.vel.y = 0.0;
-						self.key.up = false;
-						return true;
-					}
-				}
-				if self.pos.x + 0.5 >= object.pos.x && self.pos.x + 0.5 <= object.pos.x + 1.0{
-					if self.pos.y + 1.1 >= object.pos.y && self.pos.y + 1.0 <= object.pos.y + 1.0{
-						self.vel.y = 0.0;
-						return true;
-					}
-				}
-
-				if (self.pos.y + 0.1 >= object.pos.y &&
-					self.pos.y <= object.pos.y + 1.0) ||
-					(self.pos.y + 0.9 <= object.pos.y + 1.0 &&
-					self.pos.y + 0.9 >= object.pos.y) {
-					if self.pos.x + 0.8 >= object.pos.x && self.pos.x + 0.8 <= object.pos.x + 1.0 {
-						self.vel.x = 0.0;
-						self.pos.x = object.pos.x - 0.8;
-					}
-
-					if self.pos.x + 0.2 <= object.pos.x + 1.0 && self.pos.x + 0.2 >= object.pos.x {
-						self.vel.x = 0.0;
-						self.pos.x = object.pos.x + 0.8;
-					}
-				}
-
-				
-			}
-			
-		}
-
-		false
+	pub fn update(&mut self, x: f64, y: f64){
+		self.pos.add(x, y);
 	}
 
 }

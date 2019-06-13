@@ -8,9 +8,6 @@ use libs::{TileMap, Camera};
 use sprite::{Sprite, SpriteEvent, Player, Object};
 
 struct Game {
-	tilemap: TileMap,
-	objects: Vec<Object>,
-	player: Player,
 	camera: Camera
 }
 
@@ -38,53 +35,57 @@ impl Game {
 		let mut ground = Object::new(true);
 		ground.add_sprite(ground_sprite);
 		ground.set_scale(40.0);
+
 		let mut brick = Object::new(true);
 		brick.add_sprite(brick_sprite);
 		brick.set_scale(40.0);
+
 		let mut brick2 = Object::new(true);
 		brick2.add_sprite(brick2_sprite);
 		brick2.set_scale(40.0);
+
 		let mut cloud = Object::new(false);
 		cloud.add_sprite(cloud_sprite);
 		cloud.set_scale(40.0);
 
-		for (i, tiles) in tilemap.map.iter().enumerate() {
-			for (j, tile) in tiles.chars().enumerate() {
+		for i in 0..tilemap.map[0].len() {
+			for j in 0..tilemap.map.len() {
+				let tile = tilemap.map[j][i];
 				if tile == 'P' {
-					player.set_pos(j as f64, i as f64);
+					player.set_pos(i as f64, j as f64);
 				}
 				if tile == '1' {
 					let mut object = ground.clone();
-					object.set_pos(j as f64, i as f64);
+					object.set_pos(i as f64, j as f64);
 					objects.push(object);
 				}
 
 				if tile == '2' {
 					let mut object = brick.clone();
-					object.set_pos(j as f64, i as f64);
+					object.set_pos(i as f64, j as f64);
 					objects.push(object);
 				}
 
 				if tile == '?' {
 					let mut object = brick2.clone();
-					object.set_pos(j as f64, i as f64);
+					object.set_pos(i as f64, j as f64);
 					objects.push(object);
 				}
 
 				if tile == '@' {
 					let mut object = cloud.clone();
-					object.set_pos(j as f64, i as f64);
+					object.set_pos(i as f64, j as f64);
 					objects.push(object);
 				}
 				
 			}
 		};
+
+		let screen_w = tilemap.map[0].len() as f64;
+		let screen_h = tilemap.map.len() as f64;
 		
 		Game{
-			tilemap: tilemap,
-			objects: objects,
-			player: player,
-			camera: Camera::new(-1.0, w.size().width / 40.0)
+			camera: Camera::new(screen_w, screen_h, w.size().width/40.0, w.size().height/40.0, player, objects)
 		}
 	}
 
@@ -93,19 +94,13 @@ impl Game {
 		w.draw_2d(e, |_, g, _d | {
 			clear(color::hex("aaeeffff"), g);
 		});
-		
-		for object in self.objects.iter_mut().filter(|g| g.pos.x < 15.0){
-			object.render(e, w);
-		}
 
-		self.player.render(e, w);
-		
+		self.camera.render(e, w);
+		self.camera.keyEvent(e);
 
 		if let Some(u) = e.update_args(){
-			self.player.update(u.dt, self.objects.as_mut());
+			self.camera.update(u.dt);
 		}
-
-		self.player.key_press(e);
 	}
 
 }
