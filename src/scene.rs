@@ -87,6 +87,8 @@ impl Scene {
 		let width = w.size().width;
 		let height = w.size().height;
 
+		self.camera.show(e, w);
+
 		for object in self.objects.iter_mut().filter(|o| o.pos.x.round() >= -40.0 && o.pos.x.round() <= width && o.pos.y.round() >= -40.0 && o.pos.x.round() <= height){
 			object.render(e, w);
 		}

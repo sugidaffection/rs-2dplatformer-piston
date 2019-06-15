@@ -1,7 +1,6 @@
 use piston_window::*;
 
 use crate::libs::{Vec2D, Keypress};
-use crate::camera::Camera;
 use std::path::PathBuf;
 
 pub trait SpriteEvent {
