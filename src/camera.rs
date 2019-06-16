@@ -1,5 +1,6 @@
-use crate::sprite::{Player, Object};
 use piston_window::*;
+use crate::player::Player;
+use crate::object::Object;
 
 pub struct Camera {
 	pub x: f64,
@@ -37,31 +38,31 @@ impl Camera {
 
 	pub fn update(&mut self, player: &mut Player, objects: &mut Vec<Object>){
 
-		if player.pos.x <= self.x {
-			player.pos.x = self.x;
+		if player.rect.x <= self.x {
+			player.rect.x = self.x;
 			for object in objects.iter_mut(){
-				object.pos.x -= player.vel.x;
+				object.rect.x -= player.vel.x;
 			}
 		}
 
-		if player.pos.y <= self.y {
-			player.pos.y = self.y;
+		if player.rect.y <= self.y {
+			player.rect.y = self.y;
 			for object in objects.iter_mut(){
-				object.pos.y -= player.vel.y;
+				object.rect.y -= player.vel.y;
 			}
 		}
 
-		if player.pos.x + player.scale.x >= self.x + self.w {
-			player.pos.x = self.x + self.w - player.scale.x;
+		if player.rect.x + player.rect.scale >= self.x + self.w {
+			player.rect.x = self.x + self.w - player.rect.scale;
 			for object in objects.iter_mut(){
-				object.pos.x -= player.vel.x;
+				object.rect.x -= player.vel.x;
 			}
 		}
 
-		if player.pos.y + player.scale.y >= self.y + self.h {
-			player.pos.y = self.y + self.h- player.scale.y;
+		if player.rect.y + player.rect.scale >= self.y + self.h {
+			player.rect.y = self.y + self.h - player.rect.scale;
 			for object in objects.iter_mut(){
-				object.pos.y -= player.vel.y;
+				object.rect.y -= player.vel.y;
 			}
 		}
 	}

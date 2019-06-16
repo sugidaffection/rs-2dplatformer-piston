@@ -6,13 +6,14 @@ mod libs;
 mod sprite;
 mod scene;
 mod camera;
+mod player;
+mod object;
+mod collider;
 use scene::Scene;
 
 fn main() {
-	let opengl = OpenGL::V4_1;
 	let mut window: PistonWindow = WindowSettings::new("2D Platformer", (600, 600))
 			.exit_on_esc(true)
-			.graphics_api(opengl)
 			.build()
 			.unwrap();
 	window.set_ups(60);

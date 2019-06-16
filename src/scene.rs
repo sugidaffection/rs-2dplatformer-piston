@@ -1,8 +1,10 @@
 use piston_window::*;
 
 use crate::camera::Camera;
-use crate::sprite::{Object, Player, Sprite, SpriteEvent};
-use crate::libs::Tilemap;
+use crate::sprite::{Sprite, SpriteEvent};
+use crate::player::Player;
+use crate::object::Object;
+use crate::libs::{Tilemap, Rect};
 use std::path::PathBuf;
 
 pub struct Scene {
@@ -22,8 +24,6 @@ impl Scene {
 		let max_w = tilemap.first().unwrap().len() as f64 * 40.0;
 		let max_h = tilemap.len() as f64 * 40.0;
 
-		let mut player = Player::new(40.0);
-
 		let ground_texture = Sprite::load_texture(assets.join("ground.png"), w, Flip::None);
 		let brick_texture = Sprite::load_texture(assets.join("brick.png"), w, Flip::None);
 		let brick2_texture = Sprite::load_texture(assets.join("brick2.png"), w, Flip::None);
@@ -31,36 +31,39 @@ impl Scene {
 		let player_texture = Sprite::load_texture(assets.join("player.png"), w, Flip::None);
 		let player_back_texture = Sprite::load_texture(assets.join("player.png"), w, Flip::Horizontal);
 
-		player.add_animation(player_texture);
-		player.add_animation(player_back_texture);
+		let mut player_sprite = Sprite::new(player_texture);
+		player_sprite.add_texture(player_back_texture);
+		let player_rect = Rect::new(0.0, 0.0, 5.0, 0.0, 40.0);
+		let player = Player::new(player_sprite, player_rect);
 
 		for (row, tiles) in tilemap.iter().enumerate() {
 			for (col, tile) in tiles.iter().enumerate() {
-				if *tile == 'P' {
-					player.set_pos(col as f64, row as f64);
-				}
 
 				if *tile == '1' {
-					let mut object = Object::new(col as f64, row as f64, 40.0);
-					object.add_sprite(ground_texture.clone(), true);
+					let rect = Rect::new(col as f64 * 40.0, row as f64 * 40.0, 0.0, 0.0, 40.0);
+					let ground_sprite = Sprite::new(ground_texture.clone());
+					let object = Object::new(ground_sprite, rect, true);
 					objects.push(object);
 				}
 
 				if *tile == '2' {
-					let mut object = Object::new(col as f64, row as f64, 40.0);
-					object.add_sprite(brick_texture.clone(), true);
+					let rect = Rect::new(col as f64 * 40.0, row as f64 * 40.0, 0.0, 0.0, 40.0);
+					let ground_sprite = Sprite::new(brick_texture.clone());
+					let object = Object::new(ground_sprite, rect, true);
 					objects.push(object);
 				}
 
 				if *tile == '?' {
-					let mut object = Object::new(col as f64, row as f64, 40.0);
-					object.add_sprite(brick2_texture.clone(), true);
+					let rect = Rect::new(col as f64 * 40.0, row as f64 * 40.0, 0.0, 0.0, 40.0);
+					let ground_sprite = Sprite::new(brick2_texture.clone());
+					let object = Object::new(ground_sprite, rect, true);
 					objects.push(object);
 				}
 
 				if *tile == '@' {
-					let mut object = Object::new(col as f64, row as f64, 40.0);
-					object.add_sprite(cloud_texture.clone(), false);
+					let rect = Rect::new(col as f64 * 40.0, row as f64 * 40.0, 0.0, 0.0, 40.0);
+					let ground_sprite = Sprite::new(cloud_texture.clone());
+					let object = Object::new(ground_sprite, rect, false);
 					objects.push(object);
 				}
 
@@ -87,7 +90,7 @@ impl Scene {
 		let width = w.size().width;
 		let height = w.size().height;
 
-		for object in self.objects.iter_mut().filter(|o| o.pos.x.round() >= -40.0 && o.pos.x.round() <= width && o.pos.y.round() >= -40.0 && o.pos.x.round() <= height){
+		for object in self.objects.iter_mut().filter(|o| o.rect.x.round() >= -40.0 && o.rect.x.round() <= width && o.rect.y.round() >= -40.0 && o.rect.x.round() <= height){
 			object.render(e, w);
 		}
 
@@ -98,6 +101,13 @@ impl Scene {
 			self.player.update(u.dt, &mut self.objects);
 			self.camera.update(&mut self.player, &mut self.objects);
 		}
+
+		// e.mouse_cursor(|x, y| {
+		// 	self.player.rect.x = x - self.player.rect.scale / 2.0;
+		// 	self.player.rect.y = y - self.player.rect.scale / 2.0;
+		// 	self.camera.x = self.player.rect.x - self.camera.w/2.0;
+		// 	self.camera.y = self.player.rect.y - self.camera.h/2.0;
+		// });
 
 	}
 

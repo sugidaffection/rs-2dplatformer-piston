@@ -1,27 +1,71 @@
 use std::fs::File;
 use std::io::prelude::Read;
 
-#[derive(Clone)]
-pub struct Vec2D {
+pub struct Vec2d {
 	pub x: f64,
 	pub y: f64
 }
 
-impl Vec2D {
-	pub fn new()->Vec2D{
-		Vec2D{
+impl Vec2d {
+	pub fn new() -> Vec2d {
+		Vec2d{
 			x: 0.0,
 			y: 0.0
 		}
 	}
 
-	pub fn add(&mut self, x: f64, y: f64) {
+	pub fn add(&mut self, x: f64, y: f64){
 		self.x += x;
 		self.y += y;
 	}
 }
 
- pub struct Tilemap();
+#[derive(Clone)]
+pub struct Rect{
+	pub x: f64,
+	pub y: f64,
+	pub w: f64,
+	pub h: f64,
+	pub scale: f64,
+}
+
+impl Rect {
+	pub fn new(x: f64, y: f64, w: f64, h: f64, scale: f64)->Rect{
+		Rect{
+			x: x,
+			y: y,
+			w: w,
+			h: h,
+			scale: scale
+		}
+	}
+
+	pub fn left(&self) -> f64 {
+		self.x + self.w
+	}
+
+	pub fn right(&self) -> f64 {
+		self.x + self.scale - self.w
+	}
+
+	pub fn top(&self) -> f64 {
+		self.y + self.h
+	}
+
+	pub fn bottom(&self) -> f64 {
+		self.y + self.scale - self.h
+	}
+
+	pub fn center(&self) -> Vec2d {
+		Vec2d{
+			x: self.x + self.scale / 2.0,
+			y: self.y + self.scale / 2.0
+		}
+	}
+
+}
+
+pub struct Tilemap();
 
 impl Tilemap {
 
@@ -47,20 +91,8 @@ impl Tilemap {
 
 }
 
-pub struct Keypress {
+pub struct Controller {
 	pub up: bool,
-	pub down: bool,
 	pub left: bool,
 	pub right: bool
-}
-
-impl Keypress {
-	pub fn new()->Keypress{
-		Keypress {
-			up: false,
-			down: false,
-			left: false,
-			right: false
-		}
-	}
 }
