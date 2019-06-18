@@ -28,7 +28,7 @@ impl Player {
 			vel: Vec2d::new(),
 			friction: 2.0,
 			collider: Collider{ interact: None },
-			flip: false
+			flip: false,
 		}
 	}
 
@@ -50,20 +50,20 @@ impl Player {
 		if collision {
 			if let Some((interact, pos)) = &self.collider.interact {
 				match interact {
-					Interact::bottom => {
+					Interact::BOTTOM => {
 						self.ground = true;
 						self.vel.y = 0.0;
 						self.rect.y = *pos;
 					},
-					Interact::top => {
-						self.vel.y = 1.0;
+					Interact::TOP => {
+						self.vel.y = 0.0;
 						self.rect.y = *pos;
 					},
-					Interact::right => {
+					Interact::RIGHT => {
 						self.vel.x = 0.0;
 						self.rect.x = *pos;
 					},
-					Interact::left => {
+					Interact::LEFT => {
 						self.vel.x = 0.0;
 						self.rect.x = *pos;
 					}
@@ -74,7 +74,7 @@ impl Player {
 
 		
 		if self.controller.up {
-			if self.ground && self.vel.y >= 0.0 { 
+			if self.ground{ 
 				self.vel.y = -10.0;
 				self.ground = false;
 			};
@@ -83,9 +83,7 @@ impl Player {
 		self.acc.x += self.vel.x * -self.friction;
 		self.vel.add(self.acc.x * dt, self.acc.y * dt);
 
-		if self.ground {
-			self.vel.y = 0.0;
-		}
+		
 
 		self.rect.x += self.vel.x;
 		self.rect.y += self.vel.y;
